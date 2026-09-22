@@ -1,34 +1,28 @@
-# === Системные файлы ===
-.DS_Store
-Thumbs.db
-Desktop.ini
-$RECYCLE.BIN/
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
 
-# === Редакторы и IDE ===
-# Visual Studio Code
-.vscode/
-!.vscode/extensions.json
-*.code-workspace
+# Virtual environments
+venv/
+.env/
+.venv/
 
-# JetBrains (PyCharm, WebStorm, IntelliJ, etc.)
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# IDE
 .idea/
-*.iws
-out/
+.vscode/
 
-# Sublime Text & Vim
-*.sublime-project
-*.sublime-workspace
-*~
-*.swp
-*.swo
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
 
-# === Логи и кэш ===
-*.log
-logs/
-.cache/
-.eslintcache
-.npm/
-
-# === Секреты и окружение (на всякий случай) ===
-*.pem
-*.key
+# Database
+*.db
+*.sqlite3

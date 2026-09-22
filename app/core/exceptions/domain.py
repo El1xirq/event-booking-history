@@ -31,4 +31,9 @@ class InvalidRequestException(AppException):
         super().__init__(detail=detail, status_code=422, error_code="UNPROCESSABLE_CONTENT")
 
 
+class InvalidCredentialsException(AppException):
+    def __init__(self, detail: str = "Invalid user credentials"):
+        super().__init__(detail=detail, status_code=401, error_code="UNAUTHORIZED")
+
+
         

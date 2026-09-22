@@ -1,21 +1,23 @@
 from fastapi import Depends
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from uuid import UUID
 
 from app.utils.security import verify_token
 from app.crud.auth import get_user_by_id
 from app.db.session import SessionDep
 from app.core.exceptions.domain import InvalidTokenException
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+bearer_scheme = HTTPBearer()
 
-async def get_current_user(session: SessionDep, token: str = Depends(oauth2_scheme)):
-    payload = verify_token(token)
+async def get_current_user(session: SessionDep, creds: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
+    """Extract user from Bearer token"""
+    payload = verify_token(creds.credentials, "access")
 
     sub = payload.get("sub")
-    if sub is None:
+    if not sub:
         raise InvalidTokenException(detail="Invalid token payload")
     try:
-        user_id = int(sub)
+        user_id = UUID(sub)
     except (TypeError, ValueError):
         raise InvalidTokenException(detail="Invalid token payload")
     

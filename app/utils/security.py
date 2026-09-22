@@ -45,7 +45,7 @@ def decode_token(token: str) -> dict:
 
 
 def verify_token(token: str,  token_type: str = "access") -> dict:
-    """Verify token type"""
+    """Verify token type, return payload"""
     payload = decode_token(token)
     type_data = payload.get('type')
 

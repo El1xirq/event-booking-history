@@ -37,7 +37,7 @@ async def get_active_user_by_email(email: str, session: SessionDep) -> UserORM:
 async def create_user(user: RegistrationData, session: SessionDep) -> UserORM:
     """Create user"""
     try:
-        new_user = UserORM(email=user.email, hashed_password=user.hashed_password, role=user.role)
+        new_user = UserORM(email=user.email, password_hash=user.hashed_password, role=user.role)
         session.add(new_user)
         await session.commit()
     except IntegrityError:

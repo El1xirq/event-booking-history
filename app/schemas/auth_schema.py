@@ -29,7 +29,7 @@ class RegistrationRequest(BaseModel):
 class RegistrationData(BaseModel):
     email: EmailStr
     hashed_password: str
-    role: str
+    role: UserRole = UserRole.CUSTOMER
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -50,3 +50,8 @@ class UserResponse(BaseModel):
     is_active: bool
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=32)

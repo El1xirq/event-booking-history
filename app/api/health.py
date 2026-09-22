@@ -4,7 +4,7 @@ from sqlalchemy import text
 from app.db.session import SessionDep
 
 
-router = APIRouter(prefix="/v1/health")
+router = APIRouter(prefix="/health", tags=["Health"])
 
 @router.get("/live")
 async def live_health():
