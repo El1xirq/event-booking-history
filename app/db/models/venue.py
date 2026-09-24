@@ -20,6 +20,7 @@ class VenueORM(Base):
         Uuid(as_uuid=True),
         ForeignKey("users.id"),
         nullable=False,
+        index=True
     )
 
     name: Mapped[str] = mapped_column(
