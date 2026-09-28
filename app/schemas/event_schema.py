@@ -26,7 +26,7 @@ class EventCreateRequest(BaseModel):
 
 
 class EventUpdateRequest(BaseModel):
-    title: str | None = None
+    title: str | None = Field(min_length=1, max_length=255, default=None)
     description: str | None = None
     venue_id: UUID | None = None
     starts_at: datetime | None = None

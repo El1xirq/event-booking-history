@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query
 from typing import List
 from uuid import UUID
 
-from app.utils.dependencies import require_role
+from app.utils.dependencies import require_role, check_venue_owner
 from app.db.models.user import UserORM
 from app.db.models.enums import UserRole
 from app.db.session import SessionDep
@@ -44,9 +44,7 @@ async def update_venue_by_id(venue_id: UUID,
                              session: SessionDep, 
                              user: UserORM = Depends(require_role(UserRole.ORGANIZER, UserRole.ADMIN))) -> VenueResponse:
     """Update venue, role: organizer, admin"""
-    venue = await get_venue_by_id(venue_id=venue_id, session=session)
-    if venue.owner_id != user.id and user.role != UserRole.ADMIN:
-        raise PermissionDeniedException(detail="You do not have permission to modify this room")
+    await check_venue_owner(venue_id, user, session)
 
     return await update_venue(venue_data, venue_id, session)
 
@@ -56,7 +54,5 @@ async def delete_venue_by_id(venue_id: UUID,
                              session: SessionDep,
                              user: UserORM = Depends(require_role(UserRole.ORGANIZER, UserRole.ADMIN))) -> None:
     """Delete venue by id"""
-    venue = await get_venue_by_id(venue_id, session)
-    if user.id != venue.owner_id and user.role != UserRole.ADMIN:
-        raise PermissionDeniedException(detail="You do not have permission to delete this room")
+    await check_venue_owner(venue_id, user, session)
     await delete_venue(venue_id, session)
