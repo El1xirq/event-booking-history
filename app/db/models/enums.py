@@ -10,7 +10,6 @@ class UserRole(str, Enum):
 class SeatType(str, Enum):
     STANDARD = "standard"
     VIP = "vip"
-    ACCESSIBLE = "accessible"
 
 
 class EventStatus(str, Enum):

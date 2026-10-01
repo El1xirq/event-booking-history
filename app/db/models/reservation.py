@@ -1,13 +1,10 @@
 from datetime import datetime
-from decimal import Decimal
 from uuid import UUID, uuid4
 
 from sqlalchemy import (
     DateTime,
     Enum as SAEnum,
     ForeignKey,
-    Numeric,
-    String,
     Uuid,
     func,
 )
@@ -28,35 +25,29 @@ class ReservationORM(Base):
 
     user_id: Mapped[UUID] = mapped_column(
         Uuid(as_uuid=True),
-        ForeignKey("users.id"),
+        ForeignKey("users.id", ondelete="RESTRICT"),
         nullable=False,
+        index=True,
     )
 
     event_id: Mapped[UUID] = mapped_column(
         Uuid(as_uuid=True),
-        ForeignKey("events.id"),
+        ForeignKey("events.id", ondelete="RESTRICT"),
         nullable=False,
+        index=True,
     )
 
     status: Mapped[ReservationStatus] = mapped_column(
         SAEnum(ReservationStatus, name="reservation_status"),
         nullable=False,
         default=ReservationStatus.PENDING,
-    )
-
-    total_amount: Mapped[Decimal] = mapped_column(
-        Numeric(10, 2),
-        nullable=False,
+        server_default=ReservationStatus.PENDING.value,
     )
 
     expires_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
-    )
-
-    idempotency_key: Mapped[str | None] = mapped_column(
-        String(255),
-        nullable=True,
+        index=True,
     )
 
     created_at: Mapped[datetime] = mapped_column(
@@ -82,18 +73,12 @@ class ReservationORM(Base):
         back_populates="reservations",
     )
 
-    items: Mapped[list["ReservationItemORM"]] = relationship(
-        "ReservationItemORM",
-        back_populates="reservation",
-        cascade="all, delete-orphan",
-    )
-
     held_seats: Mapped[list["EventSeatORM"]] = relationship(
         "EventSeatORM",
         back_populates="reservation",
         foreign_keys="EventSeatORM.reservation_id",
     )
-
+    
     notifications: Mapped[list["NotificationORM"]] = relationship(
         "NotificationORM",
         back_populates="reservation",

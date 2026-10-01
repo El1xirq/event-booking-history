@@ -10,6 +10,7 @@ from app.db.models.enums import UserRole
 from app.db.models.user import UserORM
 from app.core.exceptions.domain import PermissionDeniedException
 from app.crud.venue import get_venue_by_id
+from app.db.models.reservation import ReservationORM
 
 bearer_scheme = HTTPBearer()
 
@@ -47,3 +48,15 @@ async def check_venue_owner(
     venue = await get_venue_by_id(venue_id, session)
     if venue.owner_id != user.id and user.role != UserRole.ADMIN:
         raise PermissionDeniedException("Not your venue")
+
+
+async def get_owned_reservation(
+    reservation_id: UUID,
+    user: UserORM,
+    session: SessionDep,
+) -> ReservationORM:
+    """Get reservation if user is owner or admin, else 404."""
+    reservation = await get_reservation_by_id(reservation_id, session)
+    if reservation.user_id != user.id and user.role != UserRole.ADMIN:
+        raise NotFoundException("Reservation not found")
+    return reservation

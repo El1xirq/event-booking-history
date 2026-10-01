@@ -10,6 +10,7 @@ from app.db.models.enums import UserRole
 from app.crud.venue import get_venue_by_id
 from app.crud.event import create_event, get_events, get_event_by_id, update_event, delete_event
 from app.core.exceptions.domain import PermissionDeniedException
+from app.crud.seat import get_seats_by_venue
 
 router = APIRouter(prefix="/events", tags=["Events"])
 

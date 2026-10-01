@@ -1,5 +1,6 @@
 from datetime import datetime
 from uuid import UUID, uuid4
+from decimal import Decimal
 
 from sqlalchemy import (
     DateTime,
@@ -9,6 +10,7 @@ from sqlalchemy import (
     Text,
     Uuid,
     func,
+    Numeric,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -65,6 +67,15 @@ class EventORM(Base):
         nullable=False,
         default=EventStatus.DRAFT,
     )
+
+    standard_price: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2), 
+        nullable=False
+        )
+    vip_price: Mapped[Decimal | None] = mapped_column(
+        Numeric(10, 2), 
+        nullable=True
+        )
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

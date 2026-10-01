@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, field_validator, model_validator, ConfigDict
 from uuid import UUID
 from datetime import datetime, timezone
+from decimal import Decimal
 
 from app.db.models.enums import EventStatus
 
@@ -10,6 +11,8 @@ class EventCreateRequest(BaseModel):
     venue_id: UUID
     starts_at: datetime
     ends_at: datetime
+    standard_price: Decimal = Field(gt=0, decimal_places=2)
+    vip_price: Decimal | None = Field(None, gt=0, decimal_places=2)
 
     @field_validator("starts_at")
     @classmethod
