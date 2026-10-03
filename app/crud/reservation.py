@@ -135,3 +135,4 @@ async def get_user_reservations(user_id: UUID, session: SessionDep) -> list[Rese
     stmt = select(ReservationORM).where(ReservationORM.user_id == user_id).order_by(ReservationORM.created_at.desc())
     result = (await session.execute(stmt)).scalars().all()
     return list(result)
+

@@ -8,9 +8,11 @@ from app.db.session import SessionDep
 from app.core.exceptions.domain import InvalidTokenException
 from app.db.models.enums import UserRole
 from app.db.models.user import UserORM
-from app.core.exceptions.domain import PermissionDeniedException
+from app.core.exceptions.domain import PermissionDeniedException, NotFoundException
 from app.crud.venue import get_venue_by_id
 from app.db.models.reservation import ReservationORM
+from app.crud.reservation import get_reservation_by_id
+
 
 bearer_scheme = HTTPBearer()
 

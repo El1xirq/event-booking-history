@@ -10,7 +10,8 @@ from app.db.models.enums import UserRole
 from app.crud.venue import get_venue_by_id
 from app.crud.event import create_event, get_events, get_event_by_id, update_event, delete_event
 from app.core.exceptions.domain import PermissionDeniedException
-from app.crud.seat import get_seats_by_venue
+from app.schemas.reservation_schema import EventSeatResponse
+from app.crud.event_seat import get_event_seats_by_event
 
 router = APIRouter(prefix="/events", tags=["Events"])
 
@@ -71,3 +72,13 @@ async def delete_event_by_id(event_id: UUID,
     if event.organizer_id != user.id and user.role != UserRole.ADMIN:
         raise PermissionDeniedException("You do not have permission to delete this event")
     await delete_event(event_id, session)
+
+
+@router.get("/{event_id}/seats", response_model=list[EventSeatResponse])
+async def get_event_seats(event_id: UUID, 
+                          session: SessionDep, 
+                          limit: int = Query(ge=1, le=10000, default=1000)) -> list[EventSeatResponse]:
+    """Get event seats, limit"""
+    await get_event_by_id(event_id, session)
+    seats = await get_event_seats_by_event(event_id, session, limit)
+    return seats
