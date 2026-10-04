@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4, UUID
 from decimal import Decimal
-from sqlalchemy import update, select
+from sqlalchemy import update, select, or_
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 from app.db.models.reservation import ReservationORM
@@ -26,18 +26,32 @@ async def create_reservation(
     event_seat_id: UUID,
     session: SessionDep,
 ) -> ReservationORM:
-    """Atomically reserve a seat for 15 minutes."""
+    """Atomically reserves a seat for 15 minutes"""
     reservation_id = uuid4()
     now = datetime.now(timezone.utc)
     hold_until = now + timedelta(minutes=15)
 
+    reservation = ReservationORM(
+        id=reservation_id,
+        user_id=user_id,
+        event_id=event_id,
+        status=ReservationStatus.PENDING,
+        expires_at=hold_until,
+    )
+    
     try:
+        session.add(reservation)
+        await session.flush() 
+
         stmt = (
             update(EventSeatORM)
             .where(
                 EventSeatORM.id == event_seat_id,
                 EventSeatORM.event_id == event_id,
-                EventSeatORM.reservation_id.is_(None),
+                or_(
+                    EventSeatORM.reservation_id.is_(None),
+                    EventSeatORM.hold_expires_at < now
+                )
             )
             .values(
                 reservation_id=reservation_id,
@@ -48,27 +62,18 @@ async def create_reservation(
 
         if result.rowcount == 0:
             await session.rollback()
-            raise ConflictException("Seat is not available")
-
-        reservation = ReservationORM(
-            id=reservation_id,
-            user_id=user_id,
-            event_id=event_id,
-            status=ReservationStatus.PENDING,
-            expires_at=hold_until,
-        )
-        session.add(reservation)
+            raise ConflictException("Seat is not available or already reserved")
 
         await session.commit()
-    except IntegrityError:
+        return reservation
+
+    except IntegrityError as e:
         await session.rollback()
-        raise ConflictException("Seat is already reserved")
+        raise ConflictException("Seat layout integrity error or race condition occurred")
     except SQLAlchemyError:
         await session.rollback()
         raise DatabaseException()
 
-    await session.refresh(reservation)
-    return reservation
 
 
 async def confirm_reservation(
