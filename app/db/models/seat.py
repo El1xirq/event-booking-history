@@ -3,7 +3,7 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import (
     DateTime,
-    Enum as SAEnum,
+    CheckConstraint,
     ForeignKey,
     String,
     Uuid,
@@ -20,11 +20,10 @@ class SeatORM(Base):
     __tablename__ = "seats"
 
     __table_args__ = (
-        UniqueConstraint(
-            "venue_id",
-            "row_number",
-            "seat_number",
-            name="uq_seat_position_in_venue",
+        UniqueConstraint("venue_id", "row_number", "seat_number", name="uq_seat_position_in_venue"),
+        CheckConstraint(
+            "seat_type IN ('standard', 'vip')",
+            name="ck_seats_seat_type",
         ),
     )
 
@@ -50,10 +49,11 @@ class SeatORM(Base):
         nullable=False,
     )
 
-    seat_type: Mapped[SeatType] = mapped_column(
-        SAEnum(SeatType, name="seat_type"),
+    seat_type: Mapped[str] = mapped_column(
+        String(20),
         nullable=False,
-        default=SeatType.STANDARD,
+        default=SeatType.STANDARD.value,
+        server_default=SeatType.STANDARD.value,
     )
 
     created_at: Mapped[datetime] = mapped_column(

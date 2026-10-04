@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from sqlalchemy import (
     DateTime,
-    Enum as SAEnum,
+    CheckConstraint,
     ForeignKey,
     String,
     Text,
@@ -20,6 +20,13 @@ from app.db.models.enums import EventStatus
 
 class EventORM(Base):
     __tablename__ = "events"
+
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('draft', 'published', 'cancelled', 'finished')",
+            name="ck_events_status",
+        ),
+    )
 
     id: Mapped[UUID] = mapped_column(
         Uuid(as_uuid=True),
@@ -62,10 +69,11 @@ class EventORM(Base):
         nullable=False,
     )
 
-    status: Mapped[EventStatus] = mapped_column(
-        SAEnum(EventStatus, name="event_status"),
+    status: Mapped[str] = mapped_column(
+        String(20),
         nullable=False,
-        default=EventStatus.DRAFT,
+        default=EventStatus.DRAFT.value,
+        server_default=EventStatus.DRAFT.value,
     )
 
     standard_price: Mapped[Decimal] = mapped_column(

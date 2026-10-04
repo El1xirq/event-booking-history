@@ -5,7 +5,7 @@ class Settings(BaseSettings):
 
     db_url: str = Field(validation_alias='DATABASE_URL')
     db_sync_url: str = Field(validation_alias='SYNC_DATABASE_URL')
-    #stest_db: str = Field(validation_alias='TEST_DATABASE_URL')
+    test_db: str = Field(validation_alias='TEST_DATABASE_URL')
 
     secret_key: str
     algorithm: str

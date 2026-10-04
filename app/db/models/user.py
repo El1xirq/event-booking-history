@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, Enum as SAEnum, String, Uuid, func
+from sqlalchemy import DateTime, String, Uuid, func, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -10,6 +10,13 @@ from app.db.models.enums import UserRole
 
 class UserORM(Base):
     __tablename__ = "users"
+
+    __table_args__ = (
+        CheckConstraint(
+            "role IN ('customer', 'organizer', 'admin')",
+            name="ck_users_role",
+        ),
+    )
 
     id: Mapped[UUID] = mapped_column(
         Uuid(as_uuid=True),
@@ -28,10 +35,11 @@ class UserORM(Base):
         nullable=False,
     )
 
-    role: Mapped[UserRole] = mapped_column(
-        SAEnum(UserRole, name="user_role"),
+    role: Mapped[str] = mapped_column(
+        String(20),
         nullable=False,
-        default=UserRole.CUSTOMER,
+        default=UserRole.CUSTOMER.value,
+        server_default=UserRole.CUSTOMER.value,
     )
 
     is_active: Mapped[bool] = mapped_column(

@@ -3,10 +3,11 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import (
     DateTime,
-    Enum as SAEnum,
     ForeignKey,
     Uuid,
     func,
+    String,
+    CheckConstraint
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -16,6 +17,13 @@ from app.db.models.enums import ReservationStatus
 
 class ReservationORM(Base):
     __tablename__ = "reservations"
+
+    __table_args__ = (
+    CheckConstraint(
+        "status IN ('pending', 'confirmed', 'cancelled', 'expired')",
+        name="ck_reservation_status",
+    ),
+)
 
     id: Mapped[UUID] = mapped_column(
         Uuid(as_uuid=True),
@@ -37,12 +45,12 @@ class ReservationORM(Base):
         index=True,
     )
 
-    status: Mapped[ReservationStatus] = mapped_column(
-        SAEnum(ReservationStatus, name="reservation_status"),
+    status: Mapped[str] = mapped_column(
+        String(20),
         nullable=False,
-        default=ReservationStatus.PENDING,
+        default=ReservationStatus.PENDING.value,
         server_default=ReservationStatus.PENDING.value,
-    )
+    )  
 
     expires_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),

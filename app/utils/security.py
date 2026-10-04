@@ -17,7 +17,7 @@ def create_access_token(user_id: UUID, role: UserRole, email: str) -> str:
     """Create access token, user_id, role, email"""
     access_data = {}
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.access_token_expire)
-    access_data.update({'sub': str(user_id), 'role': role.value, "email": email, "exp": int(expire.timestamp()), "type": "access"})
+    access_data.update({'sub': str(user_id), 'role': role, "email": email, "exp": int(expire.timestamp()), "type": "access"})
 
     access_token = jwt.encode(access_data, settings.secret_key, settings.algorithm)
 
