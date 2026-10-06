@@ -51,10 +51,6 @@ async def session():
 
 @pytest_asyncio.fixture(autouse=True)
 async def cleanup():
-    """Truncate all tables before each test."""
     async with test_engine.begin() as conn:
-        await conn.execute(text(
-            "TRUNCATE users, refresh_tokens, venues, seats, events, event_seats, reservations "
-            "RESTART IDENTITY CASCADE"
-        ))
+        await conn.execute(text("TRUNCATE users, refresh_tokens, venues, seats, events, event_seats, reservations RESTART IDENTITY CASCADE"))
     yield

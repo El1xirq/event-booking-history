@@ -17,7 +17,7 @@ async def app_exception_handler(request: Request, exc: AppException):
         f"Error: {exc.detail} | "
         f"Status: {exc.status_code} | "
         f"Code: {exc.error_code} | "
-        f"Path: {request.url.path}"
+        f"Path: {request.url.path}",
     )
 
     return JSONResponse(status_code=exc.status_code,

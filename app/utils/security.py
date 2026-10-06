@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 import jwt
 from pwdlib import PasswordHash
 from pwdlib.hashers.bcrypt import BcryptHasher
-from uuid import UUID
+from uuid import UUID, uuid4
 import hashlib
 
 from app.core.config import settings
@@ -28,7 +28,12 @@ def create_refresh_token(user_id: UUID) -> tuple:
     """Create refresh token, user_id, role, email"""
     refresh_data = {}
     expire = datetime.now(timezone.utc) + timedelta(days=settings.refresh_token_expire)
-    refresh_data.update({'sub': str(user_id), "exp": int(expire.timestamp()), "type": "refresh"})
+    refresh_data.update(
+        {'sub': str(user_id), 
+         "jti": str(uuid4()), 
+         "exp": int(expire.timestamp()), 
+         "type": "refresh"}
+         )
 
     refresh_token = jwt.encode(refresh_data, settings.secret_key, settings.algorithm)
 

@@ -1,5 +1,4 @@
 from httpx import AsyncClient
-import pytest
 
 async def test_register_success(client: AsyncClient, session):
     """POST /auth/register creates user and returns token pair"""
