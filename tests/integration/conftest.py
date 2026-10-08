@@ -22,6 +22,17 @@ async def auth_tokens(registered_user):
 
 
 @pytest_asyncio.fixture
+async def another_customer_tokens(client, session):
+    response = await client.post("/auth/register", json={
+        "email": "anothercustomer@test.com",
+        "password": "secret123"
+    })
+    assert response.status_code == 201
+    access = response.json()['access_token']
+    refresh = response.cookies.get("refresh_token")
+    return {"access": access, "refresh": refresh}
+
+@pytest_asyncio.fixture
 async def organizer_user(client, registered_user, session):
     await session.execute(
         update(UserORM).where(UserORM.email=="test@test.com").values(role='organizer')
@@ -152,3 +163,16 @@ async def event_seat(client, event):
     seats = resp.json()
     assert len(seats) > 0
     return seats[0]["id"]
+
+
+@pytest_asyncio.fixture
+async def reservation(client, event, event_seat, auth_tokens):
+    response = await client.post(
+        "/reservations",
+        headers={"Authorization": f"Bearer {auth_tokens['access']}"},
+        json={"event_id": event, "event_seat_id": event_seat}
+        )
+    assert response.status_code == 201
+    return response.json()['id']
+
+
