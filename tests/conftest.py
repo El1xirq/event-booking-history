@@ -3,6 +3,7 @@ from httpx import AsyncClient, ASGITransport
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.pool import NullPool
+from redis.asyncio import Redis, ConnectionPool
 
 from app.core.config import settings
 from app.db.base import Base
@@ -54,3 +55,22 @@ async def cleanup():
     async with test_engine.begin() as conn:
         await conn.execute(text("TRUNCATE users, refresh_tokens, venues, seats, events, event_seats, reservations RESTART IDENTITY CASCADE"))
     yield
+
+
+@pytest_asyncio.fixture(scope="session")
+async def redis_pool():
+    pool = ConnectionPool.from_url(
+        settings.redis_test_url,
+        decode_responses=True,
+    )
+    yield pool
+    await pool.aclose()
+
+
+@pytest_asyncio.fixture
+async def redis(redis_pool):
+    client = Redis(connection_pool=redis_pool)
+    await client.flushdb()
+    yield client
+    await client.aclose()
+

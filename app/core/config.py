@@ -6,7 +6,10 @@ class Settings(BaseSettings):
     db_url: str = Field(validation_alias='DATABASE_URL')
     db_sync_url: str = Field(validation_alias='SYNC_DATABASE_URL')
     test_db: str = Field(validation_alias='TEST_DATABASE_URL')
+    redis_url: str
+    redis_test_url: str
 
+    hold_ttl_seconds: int
     secret_key: str
     algorithm: str
     access_token_expire: int = Field(validation_alias='ACCESS_TOKEN_EXPIRE_MINUTES')
