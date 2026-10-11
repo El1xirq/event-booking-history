@@ -15,7 +15,6 @@ class ReservationResponse(BaseModel):
     user_id: UUID
     event_id: UUID
     status: ReservationStatus
-    expires_at: datetime | None
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

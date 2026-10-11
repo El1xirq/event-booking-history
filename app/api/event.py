@@ -12,6 +12,8 @@ from app.crud.event import create_event, get_events, get_event_by_id, update_eve
 from app.core.exceptions.domain import PermissionDeniedException
 from app.schemas.reservation_schema import EventSeatResponse
 from app.crud.event_seat import get_event_seats_by_event
+from app.db.redis import RedisDep
+from app.utils.reservation_cache import get_held_seat_ids
 
 router = APIRouter(prefix="/events", tags=["Events"])
 
@@ -75,10 +77,34 @@ async def delete_event_by_id(event_id: UUID,
 
 
 @router.get("/{event_id}/seats", response_model=list[EventSeatResponse])
-async def get_event_seats(event_id: UUID, 
-                          session: SessionDep, 
-                          limit: int = Query(ge=1, le=10000, default=1000)) -> list[EventSeatResponse]:
-    """Get event seats, limit"""
+async def get_event_seats(
+    event_id: UUID,
+    session: SessionDep,
+    redis: RedisDep,
+    limit: int = Query(ge=1, le=10000, default=1000),
+) -> list[EventSeatResponse]:
+    """List event seats with status: available / held / sold."""
     await get_event_by_id(event_id, session)
-    seats = await get_event_seats_by_event(event_id, session, limit)
-    return seats
+
+    event_seats = await get_event_seats_by_event(event_id, session, limit)
+    held_ids = await get_held_seat_ids(redis, event_id)
+
+    result: list[EventSeatResponse] = []
+    for es in event_seats:
+        if str(es.seat_id) in held_ids:
+            status = "held"
+        elif es.reservation_id is not None:
+            status = "sold"
+        else:
+            status = "available"
+
+        result.append(
+            EventSeatResponse(
+                id=es.id,
+                event_id=es.event_id,
+                seat_id=es.seat_id,
+                price=es.price,
+                status=status,
+            )
+        )
+    return result

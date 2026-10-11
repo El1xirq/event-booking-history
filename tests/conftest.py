@@ -5,11 +5,18 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.pool import NullPool
 from redis.asyncio import Redis, ConnectionPool
 
+
+import app.db.redis as redis_module
 from app.core.config import settings
 from app.db.base import Base
 from app.db.session import get_db
 from app.main import app
 
+
+redis_module.redis_pool = ConnectionPool.from_url(
+    settings.redis_test_url,
+    decode_responses=True,
+)
 
 test_engine = create_async_engine(
     settings.test_db,
@@ -54,23 +61,14 @@ async def session():
 async def cleanup():
     async with test_engine.begin() as conn:
         await conn.execute(text("TRUNCATE users, refresh_tokens, venues, seats, events, event_seats, reservations RESTART IDENTITY CASCADE"))
+    async with Redis(connection_pool=redis_module.redis_pool) as client:
+        await client.flushdb()
     yield
 
 
-@pytest_asyncio.fixture(scope="session")
-async def redis_pool():
-    pool = ConnectionPool.from_url(
-        settings.redis_test_url,
-        decode_responses=True,
-    )
-    yield pool
-    await pool.aclose()
-
-
 @pytest_asyncio.fixture
-async def redis(redis_pool):
-    client = Redis(connection_pool=redis_pool)
-    await client.flushdb()
+async def redis():
+    client = Redis(connection_pool=redis_module.redis_pool)
     yield client
     await client.aclose()
 

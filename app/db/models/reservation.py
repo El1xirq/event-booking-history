@@ -50,13 +50,7 @@ class ReservationORM(Base):
         nullable=False,
         default=ReservationStatus.PENDING.value,
         server_default=ReservationStatus.PENDING.value,
-    )  
-
-    expires_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True),
-        nullable=True,
-        index=True,
-    )
+    ) 
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
