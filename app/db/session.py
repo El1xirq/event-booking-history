@@ -1,4 +1,6 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from typing import Annotated
 from fastapi import Depends
 
@@ -15,3 +17,6 @@ async def get_db():
 
 SessionDep = Annotated[AsyncSession, Depends(get_db)]
 
+
+sync_engine = create_engine(settings.db_sync_url)
+sync_session = sessionmaker(sync_engine, expire_on_commit=False)

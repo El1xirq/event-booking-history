@@ -26,3 +26,8 @@ htmlcov/
 # Database
 *.db
 *.sqlite3
+
+celerybeat-schedule
+celerybeat-schedule-*
+*.pid
+celerybeat.pid

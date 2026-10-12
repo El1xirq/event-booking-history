@@ -16,6 +16,7 @@ from app.crud.reservation import (create_reservation,
                                   get_reservation_by_id)
 from app.core.exceptions.domain import NotFoundException
 from app.core.config import settings
+from app.tasks.email import send_confirmation_email
 
 
 router = APIRouter(prefix="/reservations", tags=["Reservations"])
@@ -56,6 +57,7 @@ async def confirm_reservation_api(reservation_id: UUID,
                                   ) -> ReservationResponse:
     """Confirm reservation"""
     reservation = await confirm_reservation(reservation_id, user.id, session, redis)
+    send_confirmation_email.delay(str(reservation_id))
     return reservation
 
 
