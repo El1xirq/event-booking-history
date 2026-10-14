@@ -60,7 +60,11 @@ async def session():
 @pytest_asyncio.fixture(autouse=True)
 async def cleanup():
     async with test_engine.begin() as conn:
-        await conn.execute(text("TRUNCATE users, refresh_tokens, venues, seats, events, event_seats, reservations RESTART IDENTITY CASCADE"))
+        await conn.execute(
+            text(
+                "TRUNCATE users, refresh_tokens, venues, seats, events, event_seats, reservations RESTART IDENTITY CASCADE"
+            )
+        )
     async with Redis(connection_pool=redis_module.redis_pool) as client:
         await client.flushdb()
     yield
@@ -71,4 +75,3 @@ async def redis():
     client = Redis(connection_pool=redis_module.redis_pool)
     yield client
     await client.aclose()
-

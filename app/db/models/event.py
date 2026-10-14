@@ -35,17 +35,11 @@ class EventORM(Base):
     )
 
     organizer_id: Mapped[UUID] = mapped_column(
-        Uuid(as_uuid=True),
-        ForeignKey("users.id"),
-        nullable=False,
-        index=True
+        Uuid(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
     )
 
     venue_id: Mapped[UUID] = mapped_column(
-        Uuid(as_uuid=True),
-        ForeignKey("venues.id"),
-        nullable=False,
-        index=True
+        Uuid(as_uuid=True), ForeignKey("venues.id"), nullable=False, index=True
     )
 
     title: Mapped[str] = mapped_column(
@@ -59,9 +53,7 @@ class EventORM(Base):
     )
 
     starts_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        nullable=False,
-        index=True
+        DateTime(timezone=True), nullable=False, index=True
     )
 
     ends_at: Mapped[datetime] = mapped_column(
@@ -76,14 +68,8 @@ class EventORM(Base):
         server_default=EventStatus.DRAFT.value,
     )
 
-    standard_price: Mapped[Decimal] = mapped_column(
-        Numeric(10, 2), 
-        nullable=False
-        )
-    vip_price: Mapped[Decimal | None] = mapped_column(
-        Numeric(10, 2), 
-        nullable=True
-        )
+    standard_price: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    vip_price: Mapped[Decimal | None] = mapped_column(Numeric(10, 2), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

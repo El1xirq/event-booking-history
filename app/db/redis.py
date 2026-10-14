@@ -19,4 +19,3 @@ async def get_redis() -> AsyncIterator[Redis]:
 
 
 RedisDep = Annotated[Redis, Depends(get_redis)]
-

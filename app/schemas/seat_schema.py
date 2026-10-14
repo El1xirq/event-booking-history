@@ -4,6 +4,7 @@ from datetime import datetime
 
 from app.db.models.enums import SeatType
 
+
 class SeatCreateRequest(BaseModel):
     row_number: str = Field(min_length=1, max_length=20)
     seat_number: str = Field(min_length=1, max_length=20)

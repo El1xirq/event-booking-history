@@ -53,4 +53,3 @@ class ReportStatus(str, Enum):
     PROCESSING = "processing"
     READY = "ready"
     FAILED = "failed"
-    

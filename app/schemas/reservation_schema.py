@@ -1,9 +1,10 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict
 from uuid import UUID
 from datetime import datetime
 from decimal import Decimal
 
 from app.db.models.enums import ReservationStatus
+
 
 class ReservationCreateRequest(BaseModel):
     event_id: UUID

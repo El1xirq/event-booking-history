@@ -1,12 +1,13 @@
 import asyncio
 
 from app.utils.reservation_cache import (
-    hold_seat, 
-    get_held_by, 
-    is_seat_held, 
+    hold_seat,
+    get_held_by,
+    is_seat_held,
     get_held_seat_ids,
     release_seat,
-    )
+)
+
 
 async def test_hold_and_release(redis):
     """Test function redis"""

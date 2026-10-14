@@ -9,11 +9,12 @@ from app.db.models.enums import UserRole
 from app.db.session import SessionDep
 from app.db.redis import RedisDep
 from app.crud.event_seat import get_event_seat_by_id
-from app.crud.reservation import (create_reservation, 
-                                  confirm_reservation, 
-                                  cancel_reservation, 
-                                  get_user_reservations, 
-                                  get_reservation_by_id)
+from app.crud.reservation import (
+    create_reservation,
+    confirm_reservation,
+    cancel_reservation,
+    get_user_reservations,
+)
 from app.core.exceptions.domain import NotFoundException
 from app.core.config import settings
 from app.tasks.email import send_confirmation_email
@@ -23,11 +24,12 @@ router = APIRouter(prefix="/reservations", tags=["Reservations"])
 
 
 @router.post("", response_model=ReservationResponse, status_code=201)
-async def create_reservation_api(rvn_data: ReservationCreateRequest,
-                                 session: SessionDep,
-                                 redis: RedisDep, 
-                                 user: UserORM = Depends(require_role(UserRole.CUSTOMER, UserRole.ADMIN))
-                                 ) -> ReservationResponse:
+async def create_reservation_api(
+    rvn_data: ReservationCreateRequest,
+    session: SessionDep,
+    redis: RedisDep,
+    user: UserORM = Depends(require_role(UserRole.CUSTOMER, UserRole.ADMIN)),
+) -> ReservationResponse:
     """Create seat reservation"""
     event_seat = await get_event_seat_by_id(rvn_data.event_seat_id, session)
     if event_seat.event_id != rvn_data.event_id:
@@ -50,11 +52,12 @@ async def create_reservation_api(rvn_data: ReservationCreateRequest,
 
 
 @router.patch("/{reservation_id}/confirm", response_model=ReservationResponse)
-async def confirm_reservation_api(reservation_id: UUID, 
-                                  session: SessionDep,
-                                  redis: RedisDep,
-                                  user: UserORM = Depends(require_role(UserRole.CUSTOMER, UserRole.ADMIN))
-                                  ) -> ReservationResponse:
+async def confirm_reservation_api(
+    reservation_id: UUID,
+    session: SessionDep,
+    redis: RedisDep,
+    user: UserORM = Depends(require_role(UserRole.CUSTOMER, UserRole.ADMIN)),
+) -> ReservationResponse:
     """Confirm reservation"""
     reservation = await confirm_reservation(reservation_id, user.id, session, redis)
     send_confirmation_email.delay(str(reservation_id))
@@ -62,31 +65,32 @@ async def confirm_reservation_api(reservation_id: UUID,
 
 
 @router.delete("/{reservation_id}", status_code=204)
-async def cancel_reservation_api(reservation_id: UUID, 
-                                 session: SessionDep,
-                                 redis: RedisDep,
-                                 user: UserORM = Depends(require_role(UserRole.CUSTOMER, UserRole.ADMIN))
-                                 ) -> None:
+async def cancel_reservation_api(
+    reservation_id: UUID,
+    session: SessionDep,
+    redis: RedisDep,
+    user: UserORM = Depends(require_role(UserRole.CUSTOMER, UserRole.ADMIN)),
+) -> None:
     """Cancel reservation"""
     await cancel_reservation(reservation_id, user.id, session, redis)
 
 
 @router.get("", response_model=list[ReservationResponse])
-async def get_reservations(session: SessionDep, 
-                           user: UserORM = Depends(require_role(UserRole.CUSTOMER, UserRole.ADMIN))
-                           ) -> list[ReservationResponse]:
+async def get_reservations(
+    session: SessionDep,
+    user: UserORM = Depends(require_role(UserRole.CUSTOMER, UserRole.ADMIN)),
+) -> list[ReservationResponse]:
     """Get reservations user"""
-    reservations =  await get_user_reservations(user.id, session)
+    reservations = await get_user_reservations(user.id, session)
     return reservations
 
 
 @router.get("/{reservation_id}", response_model=ReservationResponse)
-async def get_reservation_by_id_api(reservation_id: UUID, 
-                                session: SessionDep, 
-                                user: UserORM = Depends(require_role(UserRole.CUSTOMER, UserRole.ADMIN))
-                                ) -> ReservationResponse:
+async def get_reservation_by_id_api(
+    reservation_id: UUID,
+    session: SessionDep,
+    user: UserORM = Depends(require_role(UserRole.CUSTOMER, UserRole.ADMIN)),
+) -> ReservationResponse:
     """Get reservation by id"""
     reservation = await get_owned_reservation(reservation_id, user, session)
     return reservation
-
-

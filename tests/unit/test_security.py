@@ -21,7 +21,7 @@ def test_hash_password_is_not_plain():
     password = "secret123"
     hashed = get_password_hash(password)
     assert hashed != password
-    assert len(hashed) > 20 
+    assert len(hashed) > 20
 
 
 def test_hash_password_different_for_same_input():
@@ -53,9 +53,7 @@ def test_create_access_token_payload():
     user_id = uuid4()
     token = create_access_token(user_id, UserRole.CUSTOMER, "test@test.com")
 
-    payload = jwt.decode(
-        token, settings.secret_key, algorithms=[settings.algorithm]
-    )
+    payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
 
     assert payload["sub"] == str(user_id)
     assert payload["role"] == UserRole.CUSTOMER.value
@@ -88,9 +86,7 @@ def test_create_refresh_token_payload():
     user_id = uuid4()
     token, _ = create_refresh_token(user_id)
 
-    payload = jwt.decode(
-        token, settings.secret_key, algorithms=[settings.algorithm]
-    )
+    payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
 
     assert payload["sub"] == str(user_id)
     assert payload["type"] == "refresh"

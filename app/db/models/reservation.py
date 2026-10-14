@@ -1,14 +1,7 @@
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import (
-    DateTime,
-    ForeignKey,
-    Uuid,
-    func,
-    String,
-    CheckConstraint
-)
+from sqlalchemy import DateTime, ForeignKey, Uuid, func, String, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -19,11 +12,11 @@ class ReservationORM(Base):
     __tablename__ = "reservations"
 
     __table_args__ = (
-    CheckConstraint(
-        "status IN ('pending', 'confirmed', 'cancelled', 'expired')",
-        name="ck_reservation_status",
-    ),
-)
+        CheckConstraint(
+            "status IN ('pending', 'confirmed', 'cancelled', 'expired')",
+            name="ck_reservation_status",
+        ),
+    )
 
     id: Mapped[UUID] = mapped_column(
         Uuid(as_uuid=True),
@@ -50,7 +43,7 @@ class ReservationORM(Base):
         nullable=False,
         default=ReservationStatus.PENDING.value,
         server_default=ReservationStatus.PENDING.value,
-    ) 
+    )
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -80,7 +73,7 @@ class ReservationORM(Base):
         back_populates="reservation",
         foreign_keys="EventSeatORM.reservation_id",
     )
-    
+
     notifications: Mapped[list["NotificationORM"]] = relationship(
         "NotificationORM",
         back_populates="reservation",

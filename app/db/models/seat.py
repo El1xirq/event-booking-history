@@ -20,7 +20,9 @@ class SeatORM(Base):
     __tablename__ = "seats"
 
     __table_args__ = (
-        UniqueConstraint("venue_id", "row_number", "seat_number", name="uq_seat_position_in_venue"),
+        UniqueConstraint(
+            "venue_id", "row_number", "seat_number", name="uq_seat_position_in_venue"
+        ),
         CheckConstraint(
             "seat_type IN ('standard', 'vip')",
             name="ck_seats_seat_type",

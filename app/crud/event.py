@@ -7,14 +7,19 @@ from decimal import Decimal
 from app.db.session import SessionDep
 from app.db.models.event import EventORM
 from app.schemas.event_schema import EventCreateRequest, EventUpdateRequest
-from app.core.exceptions.domain import ConflictException, DatabaseException, NotFoundException
+from app.core.exceptions.domain import (
+    ConflictException,
+    DatabaseException,
+    NotFoundException,
+)
 from app.crud.seat import get_seats_by_venue
 from app.db.models.event_seat import EventSeatORM
 from app.db.models.enums import SeatType
 
 
 def _get_price_for_seat_type(
-    event: EventORM, seat_type: SeatType,
+    event: EventORM,
+    seat_type: SeatType,
 ) -> Decimal | None:
     """Return price for seat type, or None if not sold on this event."""
     if seat_type == SeatType.STANDARD:
@@ -33,12 +38,13 @@ async def create_event(
     event = EventORM(**event_data.model_dump(), organizer_id=organizer_id)
 
     try:
-
         session.add(event)
         await session.flush()
 
         seats = await get_seats_by_venue(
-            event.venue_id, session, limit=100000,
+            event.venue_id,
+            session,
+            limit=100000,
         )
 
         event_seats_data = []
@@ -46,11 +52,13 @@ async def create_event(
             price = _get_price_for_seat_type(event, seat.seat_type)
             if price is None:
                 continue
-            event_seats_data.append({
-                "event_id": event.id,
-                "seat_id": seat.id,
-                "price": price,
-            })
+            event_seats_data.append(
+                {
+                    "event_id": event.id,
+                    "seat_id": seat.id,
+                    "price": price,
+                }
+            )
 
         if event_seats_data:
             await session.run_sync(
@@ -82,7 +90,9 @@ async def get_events(session: SessionDep, skip: int, limit: int) -> List[EventOR
     return list(result)
 
 
-async def update_event(event_data: EventUpdateRequest, event_id: UUID, session: SessionDep) -> EventORM:
+async def update_event(
+    event_data: EventUpdateRequest, event_id: UUID, session: SessionDep
+) -> EventORM:
     """Patch event"""
     event = await get_event_by_id(event_id, session)
 
@@ -118,5 +128,3 @@ async def delete_event(event_id: UUID, session: SessionDep) -> bool:
     if result is None:
         raise NotFoundException("Event not found")
     return True
-
-

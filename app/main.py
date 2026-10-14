@@ -6,12 +6,15 @@ from app.core.logging import setup_logging
 from app.db.redis import redis_pool
 from app.api import health, auth, venue, event, seats, reservation
 from app.core.exceptions.base import AppException
-from app.core.exceptions.handlers import (RequestValidationError, 
-                                          validation_exception_handler, 
-                                          app_exception_handler, 
-                                          global_exception_handler)
+from app.core.exceptions.handlers import (
+    RequestValidationError,
+    validation_exception_handler,
+    app_exception_handler,
+    global_exception_handler,
+)
 
 logger = setup_logging()
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -26,6 +29,7 @@ async def lifespan(app: FastAPI):
         await client.aclose()
     yield
     await redis_pool.aclose()
+
 
 app = FastAPI(lifespan=lifespan)
 

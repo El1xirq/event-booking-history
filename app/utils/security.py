@@ -16,8 +16,18 @@ password_hash = PasswordHash(hashers=[BcryptHasher()])
 def create_access_token(user_id: UUID, role: UserRole, email: str) -> str:
     """Create access token, user_id, role, email"""
     access_data = {}
-    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.access_token_expire)
-    access_data.update({'sub': str(user_id), 'role': role, "email": email, "exp": int(expire.timestamp()), "type": "access"})
+    expire = datetime.now(timezone.utc) + timedelta(
+        minutes=settings.access_token_expire
+    )
+    access_data.update(
+        {
+            "sub": str(user_id),
+            "role": role,
+            "email": email,
+            "exp": int(expire.timestamp()),
+            "type": "access",
+        }
+    )
 
     access_token = jwt.encode(access_data, settings.secret_key, settings.algorithm)
 
@@ -29,11 +39,13 @@ def create_refresh_token(user_id: UUID) -> tuple:
     refresh_data = {}
     expire = datetime.now(timezone.utc) + timedelta(days=settings.refresh_token_expire)
     refresh_data.update(
-        {'sub': str(user_id), 
-         "jti": str(uuid4()), 
-         "exp": int(expire.timestamp()), 
-         "type": "refresh"}
-         )
+        {
+            "sub": str(user_id),
+            "jti": str(uuid4()),
+            "exp": int(expire.timestamp()),
+            "type": "refresh",
+        }
+    )
 
     refresh_token = jwt.encode(refresh_data, settings.secret_key, settings.algorithm)
 
@@ -43,22 +55,23 @@ def create_refresh_token(user_id: UUID) -> tuple:
 def decode_token(token: str) -> dict:
     """Decode token"""
     try:
-        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
+        payload = jwt.decode(
+            token, settings.secret_key, algorithms=[settings.algorithm]
+        )
         return payload
-    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError) as e:
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
         raise InvalidTokenException()
 
 
-def verify_token(token: str,  token_type: str = "access") -> dict:
+def verify_token(token: str, token_type: str = "access") -> dict:
     """Verify token type, return payload"""
     payload = decode_token(token)
-    type_data = payload.get('type')
+    type_data = payload.get("type")
 
     if type_data != token_type:
         raise InvalidTokenException()
     return payload
-   
-        
+
 
 def get_password_hash(password: str) -> str:
     """return password hash"""
@@ -73,5 +86,3 @@ def verify_password(password: str, encoded_password: str) -> bool:
 def hash_refresh_token(token: str) -> str:
     """Hashed refresh token"""
     return hashlib.sha256(token.encode()).hexdigest()
-
-

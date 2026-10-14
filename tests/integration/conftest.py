@@ -7,10 +7,13 @@ from app.db.models.enums import UserRole
 
 @pytest_asyncio.fixture
 async def registered_user(client):
-    resp = await client.post("/auth/register", json={
-        "email": "test@test.com",
-        "password": "secret123",
-    })
+    resp = await client.post(
+        "/auth/register",
+        json={
+            "email": "test@test.com",
+            "password": "secret123",
+        },
+    )
     return resp
 
 
@@ -23,41 +26,25 @@ async def auth_tokens(registered_user):
 
 @pytest_asyncio.fixture
 async def another_customer_tokens(client, session):
-    response = await client.post("/auth/register", json={
-        "email": "anothercustomer@test.com",
-        "password": "secret123"
-    })
+    response = await client.post(
+        "/auth/register",
+        json={"email": "anothercustomer@test.com", "password": "secret123"},
+    )
     assert response.status_code == 201
-    access = response.json()['access_token']
+    access = response.json()["access_token"]
     refresh = response.cookies.get("refresh_token")
-    return {"access": access, "refresh": refresh}
-
-@pytest_asyncio.fixture
-async def organizer_user(client, registered_user, session):
-    await session.execute(
-        update(UserORM).where(UserORM.email=="test@test.com").values(role='organizer')
-        )
-    await session.commit()
-    response = await client.post("/auth/login", json={
-        "email": "test@test.com",
-        "password": "secret123",
-    })
-    return response
-
-
-@pytest_asyncio.fixture
-async def organizer_tokens(organizer_user):
-    access = organizer_user.json()['access_token']
-    refresh = organizer_user.cookies.get("refresh_token")
     return {"access": access, "refresh": refresh}
 
 
 @pytest_asyncio.fixture
 async def organizer_user(client, session):
-    resp = await client.post("/auth/register", json={
-        "email": "organizer@test.com",
-        "password": "secret123",
-    })
+    resp = await client.post(
+        "/auth/register",
+        json={
+            "email": "organizer@test.com",
+            "password": "secret123",
+        },
+    )
     assert resp.status_code == 201
 
     await session.execute(
@@ -66,28 +53,26 @@ async def organizer_user(client, session):
         .values(role=UserRole.ORGANIZER.value)
     )
     await session.commit()
+    return resp
 
 
 @pytest_asyncio.fixture
-async def organizer_tokens(client, organizer_user):
-    resp = await client.post("/auth/login", json={
-        "email": "organizer@test.com",
-        "password": "secret123",
-    })
-    assert resp.status_code == 200
-    return {
-        "access": resp.json()["access_token"],
-        "refresh": resp.cookies.get("refresh_token"),
-    }
+async def organizer_tokens(organizer_user):
+    access = organizer_user.json()["access_token"]
+    refresh = organizer_user.cookies.get("refresh_token")
+    return {"access": access, "refresh": refresh}
 
 
 @pytest_asyncio.fixture
 async def another_organizer_tokens(client, session):
     """Register user and promote to organizer."""
-    resp = await client.post("/auth/register", json={
-        "email": "organizer_another@test.com",
-        "password": "secret123",
-    })
+    resp = await client.post(
+        "/auth/register",
+        json={
+            "email": "organizer_another@test.com",
+            "password": "secret123",
+        },
+    )
     assert resp.status_code == 201
 
     await session.execute(
@@ -170,9 +155,15 @@ async def reservation(client, event, event_seat, auth_tokens):
     response = await client.post(
         "/reservations",
         headers={"Authorization": f"Bearer {auth_tokens['access']}"},
-        json={"event_id": event, "event_seat_id": event_seat}
-        )
+        json={"event_id": event, "event_seat_id": event_seat},
+    )
     assert response.status_code == 201
-    return response.json()['id']
+    return response.json()["id"]
 
 
+@pytest_asyncio.fixture(autouse=True)
+def mock_celery_tasks(monkeypatch):
+    monkeypatch.setattr(
+        "app.api.reservation.send_confirmation_email.delay",
+        lambda *a, **kw: None,
+    )

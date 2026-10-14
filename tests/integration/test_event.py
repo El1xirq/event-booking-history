@@ -6,7 +6,10 @@ from uuid import uuid4
 from app.db.models.event import EventORM
 from app.db.models.event_seat import EventSeatORM
 
-async def test_create_event_success(client: AsyncClient, venue, seats, session, organizer_tokens):
+
+async def test_create_event_success(
+    client: AsyncClient, venue, seats, session, organizer_tokens
+):
     """POST /events create event, seat organizer"""
     starts = datetime.now(timezone.utc) + timedelta(days=7)
     ends = starts + timedelta(hours=2)
@@ -28,11 +31,11 @@ async def test_create_event_success(client: AsyncClient, venue, seats, session, 
     assert response.status_code == 201
     body = response.json()
 
-    event = (await session.execute(
-        select(EventORM).where(EventORM.id == body['id']))
-        ).scalar_one_or_none()
+    event = (
+        await session.execute(select(EventORM).where(EventORM.id == body["id"]))
+    ).scalar_one_or_none()
     assert event is not None
-    assert event.title == body['title']
+    assert event.title == body["title"]
     assert str(event.id) == body["id"]
 
     count = (
@@ -66,10 +69,12 @@ async def test_create_event_customer_forbidden(client: AsyncClient, auth_tokens,
     )
     assert response.status_code == 403
     body = response.json()
-    assert body['error_code'] == "FORBIDDEN"
+    assert body["error_code"] == "FORBIDDEN"
 
 
-async def test_create_event_in_foreign_venue(client: AsyncClient, venue, another_organizer_tokens):
+async def test_create_event_in_foreign_venue(
+    client: AsyncClient, venue, another_organizer_tokens
+):
     """POST /events create event not owner venue, exception 403"""
     starts = datetime.now(timezone.utc) + timedelta(days=7)
     ends = starts + timedelta(hours=2)
@@ -89,7 +94,7 @@ async def test_create_event_in_foreign_venue(client: AsyncClient, venue, another
     )
     assert response.status_code == 403
     body = response.json()
-    assert body['error_code'] == "FORBIDDEN"
+    assert body["error_code"] == "FORBIDDEN"
 
 
 async def test_create_event_nonexistent_venue(client: AsyncClient, organizer_tokens):
@@ -153,8 +158,8 @@ async def test_get_events_list(client: AsyncClient, venue, organizer_tokens):
     assert response.status_code == 200
     body = response.json()
     assert len(body) == 2
-    assert body[0]['title'] == "Test Event1"
-    assert body[1]['title'] == "Test Event2"
+    assert body[0]["title"] == "Test Event1"
+    assert body[1]["title"] == "Test Event2"
 
 
 async def test_get_event_by_id_not_found(client: AsyncClient):
@@ -163,22 +168,26 @@ async def test_get_event_by_id_not_found(client: AsyncClient):
     assert response.status_code == 404
 
 
-async def test_update_event_not_owner(client: AsyncClient, another_organizer_tokens, event):
+async def test_update_event_not_owner(
+    client: AsyncClient, another_organizer_tokens, event
+):
     """PATCH /events/{event_id} patch event not owner, exception 403"""
     response = await client.patch(
         f"/events/{event}",
         headers={"Authorization": f"Bearer {another_organizer_tokens['access']}"},
-        json={'title': 'Updated'}
-        )
+        json={"title": "Updated"},
+    )
     assert response.status_code == 403
     body = response.json()
-    assert body['error_code'] == "FORBIDDEN"
+    assert body["error_code"] == "FORBIDDEN"
 
 
-async def test_delete_venue_with_events(client: AsyncClient, event, venue, organizer_tokens):
+async def test_delete_venue_with_events(
+    client: AsyncClient, event, venue, organizer_tokens
+):
     """DELETE /venue/{venue_id} delete venue with events, exception 409"""
     response = await client.delete(
         f"/venues/{venue}",
-        headers={"Authorization": f"Bearer {organizer_tokens['access']}"}
-        )
+        headers={"Authorization": f"Bearer {organizer_tokens['access']}"},
+    )
     assert response.status_code == 409

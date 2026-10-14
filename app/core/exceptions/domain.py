@@ -28,12 +28,11 @@ class DatabaseException(AppException):
 
 class InvalidRequestException(AppException):
     def __init__(self, detail: str = "Invalid request"):
-        super().__init__(detail=detail, status_code=422, error_code="UNPROCESSABLE_CONTENT")
+        super().__init__(
+            detail=detail, status_code=422, error_code="UNPROCESSABLE_CONTENT"
+        )
 
 
 class InvalidCredentialsException(AppException):
     def __init__(self, detail: str = "Invalid user credentials"):
         super().__init__(detail=detail, status_code=401, error_code="UNAUTHORIZED")
-
-
-        

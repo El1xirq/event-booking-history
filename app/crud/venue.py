@@ -6,14 +6,23 @@ from typing import List
 from app.db.session import SessionDep
 from app.schemas.venue_schema import VenueCreateRequest, VenueUpdateRequest
 from app.db.models.venue import VenueORM
-from app.core.exceptions.domain import DatabaseException, NotFoundException, ConflictException
+from app.core.exceptions.domain import (
+    DatabaseException,
+    NotFoundException,
+    ConflictException,
+)
 
-async def create_venue(venue_data: VenueCreateRequest, owner_id: UUID, session: SessionDep) -> VenueORM:
+
+async def create_venue(
+    venue_data: VenueCreateRequest, owner_id: UUID, session: SessionDep
+) -> VenueORM:
     """Create venue with name and address"""
-    venue = VenueORM(name=venue_data.name, 
-                     address=venue_data.address, 
-                     description=venue_data.description, 
-                     owner_id=owner_id)
+    venue = VenueORM(
+        name=venue_data.name,
+        address=venue_data.address,
+        description=venue_data.description,
+        owner_id=owner_id,
+    )
     try:
         session.add(venue)
         await session.commit()
@@ -27,7 +36,7 @@ async def create_venue(venue_data: VenueCreateRequest, owner_id: UUID, session: 
 
 async def get_venue_by_id(venue_id: UUID, session: SessionDep) -> VenueORM:
     """Get venue by id"""
-    stmt = select(VenueORM).where(VenueORM.id==venue_id)
+    stmt = select(VenueORM).where(VenueORM.id == venue_id)
     venue = (await session.execute(stmt)).scalar_one_or_none()
     if venue is None:
         raise NotFoundException()
@@ -41,7 +50,9 @@ async def get_venues(skip: int, limit: int, session: SessionDep) -> List[VenueOR
     return list(result)
 
 
-async def update_venue(venue_data: VenueUpdateRequest, venue_id: UUID, session: SessionDep) -> VenueORM:
+async def update_venue(
+    venue_data: VenueUpdateRequest, venue_id: UUID, session: SessionDep
+) -> VenueORM:
     """Patch venue, name, address"""
     venue = await get_venue_by_id(venue_id, session)
 
@@ -49,7 +60,7 @@ async def update_venue(venue_data: VenueUpdateRequest, venue_id: UUID, session: 
     if not update_options:
         return venue
 
-    stmt = update(VenueORM).where(VenueORM.id==venue_id).values(**update_options)
+    stmt = update(VenueORM).where(VenueORM.id == venue_id).values(**update_options)
     try:
         await session.execute(stmt)
         await session.commit()
@@ -63,11 +74,7 @@ async def update_venue(venue_data: VenueUpdateRequest, venue_id: UUID, session: 
 
 async def delete_venue(venue_id: UUID, session: SessionDep) -> bool:
     """Hard delete venue"""
-    stmt = (
-        delete(VenueORM)
-        .where(VenueORM.id == venue_id)
-        .returning(VenueORM.id)
-    )
+    stmt = delete(VenueORM).where(VenueORM.id == venue_id).returning(VenueORM.id)
     try:
         result = await session.execute(stmt)
         await session.commit()

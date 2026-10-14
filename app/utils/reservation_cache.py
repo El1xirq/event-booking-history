@@ -2,13 +2,10 @@ from redis.asyncio import Redis
 from uuid import UUID
 import json
 
+
 async def hold_seat(
-        redis: Redis, 
-        event_id: UUID, 
-        seat_id: UUID, 
-        reservation_id: UUID, 
-        ttl: int
-        ) -> bool:
+    redis: Redis, event_id: UUID, seat_id: UUID, reservation_id: UUID, ttl: int
+) -> bool:
     """Create redis hold seat"""
     key = f"seat:{event_id}:{seat_id}"
     return await redis.set(key, value=str(reservation_id), ex=ttl, nx=True)
@@ -43,16 +40,20 @@ async def get_held_seat_ids(redis: Redis, event_id: UUID) -> set[str]:
 
 
 async def save_reservation_map(
-        redis: Redis,
-        user_id: UUID, 
-        reservation_id: UUID, 
-        event_id: UUID, 
-        seat_id: UUID, 
-        ttl: int
-        ) -> bool:
+    redis: Redis,
+    user_id: UUID,
+    reservation_id: UUID,
+    event_id: UUID,
+    seat_id: UUID,
+    ttl: int,
+) -> bool:
     """SET redis reservation"""
     key = f"reservation:{reservation_id}"
-    value = {"event_id": str(event_id), "seat_id": str(seat_id), "user_id": str(user_id)}
+    value = {
+        "event_id": str(event_id),
+        "seat_id": str(seat_id),
+        "user_id": str(user_id),
+    }
     return await redis.set(key, value=json.dumps(value), ex=ttl)
 
 
@@ -69,10 +70,3 @@ async def delete_reservation_map(redis: Redis, reservation_id: UUID) -> None:
     """DELETE reservation"""
     key = f"reservation:{reservation_id}"
     await redis.delete(key)
-
-
-
-
-
-
-

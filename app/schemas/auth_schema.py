@@ -16,7 +16,6 @@ class RegistrationRequest(BaseModel):
             raise ValueError("The password must contain at least 1 digit.")
         return value
 
-
     @field_validator("email", mode="before")
     @classmethod
     def validate_email_lower(cls, email: Any) -> Any:
@@ -25,15 +24,15 @@ class RegistrationRequest(BaseModel):
         return email
 
 
-
 class RegistrationData(BaseModel):
     email: EmailStr
     hashed_password: str
     role: UserRole = UserRole.CUSTOMER
 
+
 class TokenResponse(BaseModel):
     access_token: str
-    token_type: str = Field(default='Bearer')
+    token_type: str = Field(default="Bearer")
 
 
 class UpdateUserSchema(BaseModel):
@@ -41,7 +40,6 @@ class UpdateUserSchema(BaseModel):
     hashed_password: str | None = Field(default=None)
     role: UserRole | None = Field(default=None)
 
-    
 
 class UserResponse(BaseModel):
     id: UUID

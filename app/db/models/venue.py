@@ -17,10 +17,7 @@ class VenueORM(Base):
     )
 
     owner_id: Mapped[UUID] = mapped_column(
-        Uuid(as_uuid=True),
-        ForeignKey("users.id"),
-        nullable=False,
-        index=True
+        Uuid(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
     )
 
     name: Mapped[str] = mapped_column(

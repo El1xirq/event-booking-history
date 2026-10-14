@@ -3,6 +3,7 @@
 Revision ID: xxxx
 Revises: a53606ea9f71
 """
+
 from typing import Sequence, Union
 
 from alembic import op
@@ -34,7 +35,9 @@ def upgrade() -> None:
     # ─── reservations.status ─────────────────────────────
     op.add_column(
         "reservations",
-        sa.Column("status_new", sa.String(20), nullable=False, server_default="pending"),
+        sa.Column(
+            "status_new", sa.String(20), nullable=False, server_default="pending"
+        ),
     )
     op.execute("UPDATE reservations SET status_new = lower(status::text)")
     op.drop_column("reservations", "status")
@@ -64,7 +67,9 @@ def upgrade() -> None:
     # ─── seats.seat_type ─────────────────────────────────
     op.add_column(
         "seats",
-        sa.Column("seat_type_new", sa.String(20), nullable=False, server_default="standard"),
+        sa.Column(
+            "seat_type_new", sa.String(20), nullable=False, server_default="standard"
+        ),
     )
     op.execute("UPDATE seats SET seat_type_new = lower(seat_type::text)")
     op.drop_column("seats", "seat_type")

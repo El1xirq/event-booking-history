@@ -5,6 +5,7 @@ from decimal import Decimal
 
 from app.db.models.enums import EventStatus
 
+
 class EventCreateRequest(BaseModel):
     title: str = Field(min_length=1, max_length=255)
     description: str | None = None

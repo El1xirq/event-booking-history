@@ -5,19 +5,21 @@ from uuid import UUID
 from app.db.session import SessionDep
 from app.db.models.user import UserORM
 from app.schemas.auth_schema import UpdateUserSchema, RegistrationData
-from app.core.exceptions.domain import NotFoundException, DatabaseException, ConflictException
-
-
+from app.core.exceptions.domain import (
+    NotFoundException,
+    DatabaseException,
+    ConflictException,
+)
 
 
 async def get_user_by_id(user_id: UUID, session: SessionDep) -> UserORM:
     """Get user by id"""
-    stmt = select(UserORM).where(UserORM.id == user_id, UserORM.is_active==True)
+    stmt = select(UserORM).where(UserORM.id == user_id, UserORM.is_active.is_(True))
     result = (await session.execute(stmt)).scalar_one_or_none()
     if result is None:
         raise NotFoundException("User not found")
     return result
-    
+
 
 async def get_user_by_email(email: str, session: SessionDep) -> UserORM | None:
     """Get user by email"""
@@ -27,17 +29,19 @@ async def get_user_by_email(email: str, session: SessionDep) -> UserORM | None:
 
 async def get_active_user_by_email(email: str, session: SessionDep) -> UserORM:
     """Get user by email is_active = True"""
-    stmt = select(UserORM).where(UserORM.email == email, UserORM.is_active == True)
+    stmt = select(UserORM).where(UserORM.email == email, UserORM.is_active.is_(True))
     user = (await session.execute(stmt)).scalar_one_or_none()
     if user is None:
         raise NotFoundException("User not found")
     return user
-    
+
 
 async def create_user(user: RegistrationData, session: SessionDep) -> UserORM:
     """Create user"""
     try:
-        new_user = UserORM(email=user.email, password_hash=user.hashed_password, role=user.role)
+        new_user = UserORM(
+            email=user.email, password_hash=user.hashed_password, role=user.role
+        )
         session.add(new_user)
         await session.commit()
     except IntegrityError:
@@ -46,17 +50,19 @@ async def create_user(user: RegistrationData, session: SessionDep) -> UserORM:
     except SQLAlchemyError:
         await session.rollback()
         raise DatabaseException()
-    
+
     await session.refresh(new_user)
     return new_user
 
 
-async def update_user(user_id: UUID, user_update: UpdateUserSchema, session: SessionDep) -> UserORM:
+async def update_user(
+    user_id: UUID, user_update: UpdateUserSchema, session: SessionDep
+) -> UserORM:
     """Patch user"""
     user = await get_user_by_id(user_id, session)
 
     update_options = user_update.model_dump(exclude_none=True)
-    
+
     if not update_options:
         return user
 
@@ -70,11 +76,12 @@ async def update_user(user_id: UUID, user_update: UpdateUserSchema, session: Ses
 
     return await get_user_by_id(user_id, session)
 
+
 async def delete_user(user_id: UUID, session: SessionDep) -> bool:
     """Soft delete user"""
     stmt = (
         update(UserORM)
-        .where(UserORM.id == user_id, UserORM.is_active == True)
+        .where(UserORM.id == user_id, UserORM.is_active.is_(True))
         .values(is_active=False)
         .returning(UserORM.id)
     )
@@ -88,4 +95,3 @@ async def delete_user(user_id: UUID, session: SessionDep) -> bool:
     if result.scalar_one_or_none() is None:
         raise NotFoundException("User not found")
     return True
-    
